@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_Darken Shader
+  m_Name: Shader Graphs_Darken Shader 2
   m_Shader: {fileID: -6465566751694194690, guid: 4ad07239f4fc58a4284f20789e44028f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -51,10 +51,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Darken: 0.05
+    - _Darken: 0.025
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - _Base_Color: {r: 1, g: 0.23511335, b: 0, a: 1}
+    - _Base_Color: {r: 0.15222931, g: 1, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
