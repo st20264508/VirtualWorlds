@@ -7,7 +7,7 @@ public class Flammable : MonoBehaviour
 {
     private ParticleSystem fireParticles;
     private AudioSource fireSound;
-    public GameObject firePrefab; 
+   // public GameObject firePrefab; 
 
     
 
@@ -105,8 +105,9 @@ public class Flammable : MonoBehaviour
 
     void DarkenObject()
     {
-        darkenvalue = health/starthealth;
-        gameObject.GetComponentInParent<Renderer>().sharedMaterial.SetFloat("_Darken", darkenvalue);  
+        darkenvalue = health/starthealth; //gives value between 0-1f
+        //gameObject.GetComponentInParent<Renderer>().sharedMaterial.SetFloat("_Darken", darkenvalue); //this was changing all the material on all objects that used it.
+        gameObject.GetComponentInParent<Renderer>().material.SetFloat("_Darken", darkenvalue);
     }
 
     /*public void burning()
