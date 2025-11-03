@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Diagnostics.Contracts;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -22,7 +23,7 @@ public class FireSpreader : MonoBehaviour
     private Ray testrayright;
     Ray[] rays = new Ray[4];
 
-    bool burnedout;
+    //bool burnedout;
     bool spreadfound;
 
     //float burncount = 0.0f;
@@ -44,12 +45,13 @@ public class FireSpreader : MonoBehaviour
         rays[2] = testrayleft; 
         rays[3] = testrayright;
 
-        burnedout = false;
+        //burnedout = false;
         //fireLogic();
         //burncount = 0.0f;
         //burnduration = 2.5f;
 
-        StartCoroutine(NewFireLogic());
+        StartCoroutine(NewFireLogic()); //works better than test
+        //FireLogicTest();
     }
 
     // Update is called once per frame
@@ -154,11 +156,20 @@ public class FireSpreader : MonoBehaviour
         //burnedout = false;
         transform.GetChild(1).gameObject.SetActive(true);
         
+        /*
         for (int i = 0;i < spreadamount;i++)
         {
             yield return new WaitForSeconds(Random.Range(2.0f, 5.0f));
             createNewFire();
-        }//only need for loop for creating new fire, death logic should be outside.
+        }//only need for loop for creating new fire, death logic should be outside. */
+
+        int count = 0;
+        while (count < spreadamount) //seemed to last longer than the for loop but still crashed
+        {
+            yield return new WaitForSeconds(Random.Range(2.0f, 5.0f));
+            createNewFire();
+            count++;
+        }
         
         yield return new WaitForSeconds(Random.Range(1f, 3f));
         transform.GetChild(1).gameObject.SetActive(false);
@@ -174,16 +185,26 @@ public class FireSpreader : MonoBehaviour
         createNewFire();  
         Destroy(gameObject);*/
     }
-    /*public FireSpreader create()
+
+    /*public void FireLogicTest() //didnt work
     {
-        var instance = Instantiate(this);
+        //int spreadamount = Random.Range(1, 4);
+        int spreadamount = 2;
+        //burnedout = false;
+        transform.GetChild(1).gameObject.SetActive(true);
 
-        instance.newfirespreader = this;
+        for (int i = 0; i < spreadamount; i++)
+        {
+            //yield return new WaitForSeconds(Random.Range(2.0f, 5.0f));
+            StartCoroutine(cooldown(1f));
+            createNewFire();
+        }//only need for loop for creating new fire, death logic should be outside.
 
-        Destroy(gameObject);
-
-        return instance; 
-
+        //yield return new WaitForSeconds(Random.Range(1f, 3f));
+        StartCoroutine(cooldown(1f)); 
+        transform.GetChild(1).gameObject.SetActive(false); 
+        //burnedout = true;
+        Destroy(gameObject); //not sure if this is helping
     }*/
 
     public void createNewFire() //maybe check all rays then add flammable ones to list and spawn those 
@@ -217,7 +238,7 @@ public class FireSpreader : MonoBehaviour
        //{
            while (!spreadfound)
            {
-               int randomnumber = Random.Range(0, 4); 
+               int randomnumber = Random.Range(0, rays.Length); 
 
                if (Physics.Raycast(rays[randomnumber], out hit, 2.1f))
                {
@@ -227,6 +248,7 @@ public class FireSpreader : MonoBehaviour
                        //Instantiate(testcube, hit.point, Quaternion.identity);
                        GameObject newfire = Instantiate(newfirespreader, hit.point, Quaternion.identity) as GameObject;
                        spreadfound = true;
+                    //break; //addedthis break didnt help
                    }
                    else
                    {
@@ -238,4 +260,8 @@ public class FireSpreader : MonoBehaviour
        }
     //}
 
+    /*IEnumerator cooldown(float cooldown)
+    {
+        yield return new WaitForSeconds(cooldown);
+    }*/
 }
