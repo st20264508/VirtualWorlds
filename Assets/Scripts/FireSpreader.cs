@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Diagnostics.Contracts;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class FireSpreader : MonoBehaviour
 {
@@ -22,9 +23,10 @@ public class FireSpreader : MonoBehaviour
     Ray[] rays = new Ray[4];
 
     bool burnedout;
+    bool spreadfound;
 
-    float burncount = 0.0f;
-    float burnduration = 2.5f;
+    //float burncount = 0.0f;
+    //float burnduration = 2.5f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -44,8 +46,8 @@ public class FireSpreader : MonoBehaviour
 
         burnedout = false;
         //fireLogic();
-        burncount = 0.0f;
-        burnduration = 2.5f;
+        //burncount = 0.0f;
+        //burnduration = 2.5f;
 
         StartCoroutine(NewFireLogic());
     }
@@ -130,7 +132,7 @@ public class FireSpreader : MonoBehaviour
         return (false, hit.point); 
     }
 
-    public void fireLogic()
+    /*public void fireLogic()
     {
         //if (Physics.Raycast(rays[0], ))
 
@@ -144,18 +146,33 @@ public class FireSpreader : MonoBehaviour
             createNewFire();
             burnedout = true;
         }
-    }
+    }*/
 
-    IEnumerator NewFireLogic()
+    IEnumerator NewFireLogic() //currently causing crashes.
     {
+        int spreadamount = Random.Range(1, 4);
+        //burnedout = false;
+        transform.GetChild(1).gameObject.SetActive(true);
+        
+        for (int i = 0;i < spreadamount;i++)
+        {
+            yield return new WaitForSeconds(Random.Range(2.0f, 5.0f));
+            createNewFire();
+        }//only need for loop for creating new fire, death logic should be outside.
+        
+        yield return new WaitForSeconds(Random.Range(1f, 3f));
+        transform.GetChild(1).gameObject.SetActive(false);
+        //burnedout = true;
+        Destroy(gameObject); //not sure if this is helping
+
+        /* //Old NewFireLogic.
         burnedout = false;
         transform.GetChild(1).gameObject.SetActive(true);
         yield return new WaitForSeconds(3f);
         transform.GetChild(1).gameObject.SetActive(false);
         burnedout = true;
-        //maybe instantiate gameobject "fireblocker" here to prevent fire from spreading to previous location of fire.
-        createNewFire();
-        Destroy(gameObject); //not sure if this is helping
+        createNewFire();  
+        Destroy(gameObject);*/
     }
     /*public FireSpreader create()
     {
@@ -169,11 +186,12 @@ public class FireSpreader : MonoBehaviour
 
     }*/
 
-    public void createNewFire()
+    public void createNewFire() //maybe check all rays then add flammable ones to list and spawn those 
     {
        RaycastHit hit;
+       spreadfound = false;
 
-        if (burnedout)
+        /*if (burnedout) //old spawn logic
         {
             for (int i = 0; i < rays.Length; i++)
             {
@@ -184,12 +202,8 @@ public class FireSpreader : MonoBehaviour
                         Debug.DrawRay(testray.origin, testray.direction, Color.red);
                         //Instantiate(newfire, hit.point, Quaternion.identity);
                         //Instantiate(testcube, hit.point, Quaternion.identity); 
-                        //create();
-                        //gameObject.GetComponent<CreateFireObject>().create(hit.point); 
-                        //firecreator.create(hit.point);
                         //Instantiate(this, hit.point, Quaternion.identity); 
-                        GameObject newfire = Instantiate(newfirespreader, hit.point, Quaternion.identity) as GameObject;   
-                        
+                        //GameObject newfire = Instantiate(newfirespreader, hit.point, Quaternion.identity) as GameObject;   
                     }
                     else
                     {
@@ -197,8 +211,31 @@ public class FireSpreader : MonoBehaviour
                     }
                 }
             }
-        }
-     
-    }
+        }*/
+
+       //if (burnedout)
+       //{
+           while (!spreadfound)
+           {
+               int randomnumber = Random.Range(0, 4); 
+
+               if (Physics.Raycast(rays[randomnumber], out hit, 2.1f))
+               {
+                   if (hit.transform.CompareTag("Flammable"))
+                   {
+                       //Debug.DrawRay(testray.origin, testray.direction, Color.red);
+                       //Instantiate(testcube, hit.point, Quaternion.identity);
+                       GameObject newfire = Instantiate(newfirespreader, hit.point, Quaternion.identity) as GameObject;
+                       spreadfound = true;
+                   }
+                   else
+                   {
+                       Debug.Log("Flammable surface not found");
+                       spreadfound = false;
+                   }
+               }
+           }
+       }
+    //}
 
 }
