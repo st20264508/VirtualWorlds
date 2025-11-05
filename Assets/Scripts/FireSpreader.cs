@@ -2,29 +2,39 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
+//NOTE USING 4 SPAWNS IN A CROSS MAKES THE FIRE SPREAD EVERYWHERE LIKE IRL, USING 4 SPAWNS SELECTED FROM 8 MAKES IT SPREAD LESS LIKE IRL BUT MORE RANDOMLY, NOT SURE WHICH EFFECT IS DESIRED
+//COULD RANDOMISE THE CROSS SLIGHTLY?
+//FOR NOW SET UP AS 4 FROM 8, to use cross remove the rays 5->8.
 public class FireSpreader : MonoBehaviour
 {
+    //public GameObject testcube; 
+    //public GameObject testsphere;
 
-    public CreateFireObject firecreator;
-    //public FireSpreader newfirespreader;
-
-    public GameObject testcube;
-    public GameObject testsphere;
-    public GameObject newfirespreader;
+    public GameObject newfirespreader; //holds firespreader prefab for spawning new fire
 
     public Transform RaySpawn;
-    private Ray testray;
+    //private Ray testray;
+    
+    //can be set in SetRays() for having eight in a compass shape but 8 fires is alot more expensive than spawning 4 in a cross.
+    private Ray testray1;
+    private Ray testray2;
+    private Ray testray3;
+    private Ray testray4;
+    
+
     private Ray testrayforward;
     private Ray testraybackward;
     private Ray testrayleft;
     private Ray testrayright;
-    Ray[] rays = new Ray[4];
+    Ray[] rays = new Ray[8];
 
+    [SerializeField] float burnedlifetime = 30f; 
     //bool burnedout;
     //bool spreadfound;
 
@@ -34,19 +44,10 @@ public class FireSpreader : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        transform.GetChild(1).gameObject.SetActive(false); 
+        transform.GetChild(1).gameObject.SetActive(false);
+        transform.GetChild(2).gameObject.SetActive(false);
 
-        testray = new Ray(RaySpawn.position, Vector3.down);
-        testrayforward = new Ray(RaySpawn.position + new Vector3(0, 0, 1), Vector3.down);
-        testraybackward = new Ray(RaySpawn.position + new Vector3(0, 0, -1), Vector3.down);
-        testrayleft = new Ray(RaySpawn.position + new Vector3(-1, 0, 0), Vector3.down);
-        testrayright = new Ray(RaySpawn.position + new Vector3(1, 0, 0), Vector3.down);
-         
-        rays[0] = testrayforward; 
-        rays[1] = testraybackward; 
-        rays[2] = testrayleft; 
-        rays[3] = testrayright;
-
+        SetRays();
         //burnedout = false;
         //fireLogic();
         //burncount = 0.0f;
@@ -65,6 +66,8 @@ public class FireSpreader : MonoBehaviour
 
     public void drawLines()
     {
+
+        /*
         //Debug.DrawLine(RaySpawn.position + new Vector3(0, 0, 1), Vector3.down, Color.red); 
         //Debug.DrawLine(RaySpawn.position, Vector3.back, Color.green);
         // Debug.DrawLine(RaySpawn.position, Vector3.right, Color.blue);
@@ -78,7 +81,7 @@ public class FireSpreader : MonoBehaviour
         //Debug.DrawRay(testrayforward.origin, testray.direction, Color.red);
         //Debug.DrawRay(testrayforward.origin, testray.direction, Color.green);
         //Debug.DrawRay(testrayforward.origin, testray.direction, Color.yellow); 
-        //Debug.DrawRay(testrayforward.origin, testray.direction, Color.pink); 
+        //Debug.DrawRay(testrayforward.origin, testray.direction, Color.pink); */
 
         /*
         if (Physics.Raycast(testray, out hit, 100f))  
@@ -154,10 +157,11 @@ public class FireSpreader : MonoBehaviour
 
     IEnumerator NewFireLogic() //currently causing crashes.
     {
-        int spreadamount = Random.Range(1, 3);
+        //int spreadamount = 1;
+        //int spreadamount = Random.Range(1, 4);
         transform.GetChild(1).gameObject.SetActive(true);
         
-        
+        /*
         for (int i = 0; i < spreadamount; i++)
         {
             yield return new WaitForSeconds(Random.Range(2.0f, 5.0f));
@@ -196,9 +200,17 @@ public class FireSpreader : MonoBehaviour
                     break;
                 }
 
-            }*/
-        }//only need for loop for creating new fire, death logic should be outside. 
-        
+            }
+        }*/ //only need for loop for creating new fire, death logic should be outside. 
+
+        List<Vector3> spawns = GetSpawnLocations();
+
+        for (int i = 0; i < spawns.Count; i++)
+        {
+            yield return new WaitForSeconds(Random.Range(1.5f, 4.0f)); 
+            GameObject newfire = Instantiate(newfirespreader, spawns[i], Quaternion.identity) as GameObject;
+        }
+
         /*
         int count = 0;
         while (count < spreadamount) //seemed to last longer than the for loop but still crashed
@@ -207,9 +219,12 @@ public class FireSpreader : MonoBehaviour
             createNewFire();
             count++;
         }*/
-        
+
         yield return new WaitForSeconds(Random.Range(1f, 3f));
         transform.GetChild(1).gameObject.SetActive(false);
+        transform.GetChild(2).gameObject.SetActive(true);
+        //Instantiate(testcube, gameObject.transform.position, Quaternion.identity); 
+        yield return new WaitForSeconds(burnedlifetime);  
         Destroy(gameObject); //not sure if this is helping
 
         /* //Old NewFireLogic.
@@ -271,9 +286,13 @@ public class FireSpreader : MonoBehaviour
             }
         }
 
-        int randomnumber = Random.Range(0, usablespawns.Count); 
-        GameObject newfire = Instantiate(newfirespreader, usablespawns[randomnumber], Quaternion.identity) as GameObject;
+        //int randomnumber = Random.Range(0, usablespawns.Count); //try to fix error by adding +1
+        //GameObject newfire = Instantiate(newfirespreader, usablespawns[randomnumber], Quaternion.identity) as GameObject;
         
+        for (int i = 0;i < usablespawns.Count;i++)
+        {
+            GameObject newfire = Instantiate(newfirespreader, usablespawns[i], Quaternion.identity) as GameObject;
+        }
 
         //if (burnedout)
         //{
@@ -309,4 +328,91 @@ public class FireSpreader : MonoBehaviour
             }
       */
     }
+
+    public List<Vector3> GetSpawnLocations()
+    {
+        RaycastHit hit;
+
+        List<Vector3> usablespawns = new List<Vector3>();
+
+        for (int i = 0; i < rays.Length; i++)
+        {
+            if (Physics.Raycast(rays[i], out hit, 2.1f))
+            {
+                if (hit.transform.CompareTag("Flammable"))
+                {
+                    //Debug.DrawRay(testray.origin, testray.direction, Color.red);
+                    //Instantiate(newfire, hit.point, Quaternion.identity);
+                    //Instantiate(testcube, hit.point, Quaternion.identity); 
+                    //Instantiate(this, hit.point, Quaternion.identity); 
+                    //GameObject newfire = Instantiate(newfirespreader, hit.point, Quaternion.identity) as GameObject;   
+
+                    usablespawns.Add(hit.point);
+                }
+                else
+                {
+                    Debug.Log("Flammable surface not found");
+                }
+            }
+        }
+
+        List<Vector3> randomisedspawns = usablespawns.OrderBy(i => Guid.NewGuid()).ToList(); //https://discussions.unity.com/t/clever-way-to-shuffle-a-list-t-in-one-line-of-c-code/535113/4 Eiznek's comment
+        List<Vector3> selectedspawns = new List<Vector3>();
+
+        //if statement to avoid out of range exceptions
+        if (randomisedspawns.Count > 4)
+        {
+            for (int i = 0; i < 4; i++) 
+            {
+                selectedspawns.Add(randomisedspawns[i]);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < randomisedspawns.Count; i++) 
+            {
+                selectedspawns.Add(randomisedspawns[i]);
+            }
+        }
+       
+
+        return selectedspawns;
+    }
+
+    public void SetRays()
+    {
+        //testray = new Ray(RaySpawn.position, Vector3.down);
+        testrayforward = new Ray(RaySpawn.position + new Vector3(0, 0, 1), Vector3.down);
+        testraybackward = new Ray(RaySpawn.position + new Vector3(0, 0, -1), Vector3.down);
+        testrayleft = new Ray(RaySpawn.position + new Vector3(-1, 0, 0), Vector3.down);
+        testrayright = new Ray(RaySpawn.position + new Vector3(1, 0, 0), Vector3.down);
+
+        rays[0] = testrayforward;
+        rays[1] = testraybackward;
+        rays[2] = testrayleft;
+        rays[3] = testrayright;
+
+        /*
+        testray1 = new Ray(RaySpawn.position + new Vector3(0.6f, 0, 0.6f), Vector3.down);
+        testray2 = new Ray(RaySpawn.position + new Vector3(-0.6f, 0, -0.6f), Vector3.down);
+        testray3 = new Ray(RaySpawn.position + new Vector3(0.6f, 0, -0.6f), Vector3.down);
+        testray4 = new Ray(RaySpawn.position + new Vector3(-0.6f, 0, 0.6f), Vector3.down); 
+        */
+
+        
+        testray1 = new Ray(RaySpawn.position + new Vector3(1f, 0, 1f), Vector3.down);
+        testray2 = new Ray(RaySpawn.position + new Vector3(-1f, 0, -1f), Vector3.down);
+        testray3 = new Ray(RaySpawn.position + new Vector3(1f, 0, -1f), Vector3.down);
+        testray4 = new Ray(RaySpawn.position + new Vector3(-1f, 0, 1f), Vector3.down); 
+        
+
+        
+        rays[4] = testray1;
+        rays[5] = testray2;
+        rays[6] = testray3;
+        rays[7] = testray4;
+        
+    }
+
+
 }
